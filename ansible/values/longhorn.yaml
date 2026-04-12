@@ -1,0 +1,9 @@
+persistence:
+  defaultClass: true
+ingress:
+  enabled: true
+  host: longhorn.home.local
+  tls: true
+  tlsSecret: longhorn-tls
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer

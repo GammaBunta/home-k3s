@@ -1,0 +1,13 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: longhorn
+  namespace: kube-system
+spec:
+  repo: https://charts.longhorn.io
+  chart: longhorn
+  version: 1.6.2
+  targetNamespace: longhorn-system
+  createNamespace: true
+  valuesContent: |-
+    {{ lookup('file', 'values/longhorn.yaml') | indent(4) }}

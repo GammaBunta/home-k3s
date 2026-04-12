@@ -1,0 +1,19 @@
+---
+- name: Deploy Portainer CE via Helm
+  hosts: master
+  become: yes
+  tasks:
+    - name: Deploy Portainer HelmChart
+      template:
+        src: templates/portainer-helm.yaml.j2
+        dest: /tmp/portainer-helm.yaml
+
+    - name: Apply Portainer HelmChart
+      shell: k3s kubectl apply -f /tmp/portainer-helm.yaml
+
+    - name: Wait for Portainer to be ready
+      shell: k3s kubectl -n portainer wait --for=condition=ready pod -l app.kubernetes.io/name=portainer --timeout=120s
+      register: port_wait
+      retries: 5
+      delay: 15
+      until: port_wait.rc == 0

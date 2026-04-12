@@ -1,3 +1,4 @@
 *.tfvars
 .terraform/
 terraform.tfstate*
+ansible/vault-password.txt

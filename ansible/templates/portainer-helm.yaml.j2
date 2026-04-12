@@ -1,0 +1,12 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: portainer
+  namespace: kube-system
+spec:
+  repo: https://portainer.github.io/k8s/
+  chart: portainer
+  targetNamespace: portainer
+  createNamespace: true
+  valuesContent: |-
+    {{ lookup('file', 'values/portainer.yaml') | indent(4) }}

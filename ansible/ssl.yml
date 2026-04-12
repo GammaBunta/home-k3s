@@ -1,0 +1,37 @@
+---
+- name: Deploy Cert-Manager and configure local SSL
+  hosts: master
+  become: yes
+  tasks:
+    - name: Deploy Cert-Manager via Helm
+      template:
+        src: templates/cert-manager-helm.yaml.j2
+        dest: /tmp/cert-manager-helm.yaml
+
+    - name: Apply Cert-Manager HelmChart
+      shell: k3s kubectl apply -f /tmp/cert-manager-helm.yaml
+
+    - name: Wait for Cert-Manager pods to be ready
+      shell: k3s kubectl -n cert-manager wait --for=condition=ready pod -l app.kubernetes.io/instance=cert-manager --timeout=180s
+      register: cm_wait
+      retries: 5
+      delay: 15
+      until: cm_wait.rc == 0
+
+    - name: Create self-signed ClusterIssuer
+      copy:
+        dest: /tmp/cluster-issuer.yaml
+        content: |
+          apiVersion: cert-manager.io/v1
+          kind: ClusterIssuer
+          metadata:
+            name: selfsigned-issuer
+          spec:
+            selfSigned: {}
+
+    - name: Apply ClusterIssuer
+      shell: k3s kubectl apply -f /tmp/cluster-issuer.yaml
+      register: issuer_result
+      retries: 5
+      delay: 10
+      until: issuer_result.rc == 0

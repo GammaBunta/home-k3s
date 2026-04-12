@@ -1,0 +1,18 @@
+service:
+  type: ClusterIP
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+  hosts:
+    - host: portainer.home.local
+      paths:
+        - path: "/"
+  tls:
+    - secretName: portainer-tls
+      hosts:
+        - portainer.home.local
+persistence:
+  enabled: true
+  storageClass: longhorn
+  size: 2Gi

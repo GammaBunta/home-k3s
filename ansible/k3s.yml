@@ -1,0 +1,41 @@
+---
+# ==========================================
+# 1. Master
+# ==========================================
+- name: K3s Master
+  hosts: master
+  become: yes 
+  tasks:
+    - name: Install K3s (Master)
+      shell: curl -sfL https://get.k3s.io | sh -
+      args:
+        creates: /etc/rancher/k3s/k3s.yaml
+
+    - name: Wait for the Master to generate the join token
+      wait_for:
+        path: /var/lib/rancher/k3s/server/node-token
+
+    - name: Read the join token
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: node_token_b64
+
+    - name: Save the token in memory for the workers
+      set_fact:
+        k3s_token: "{{ node_token_b64['content'] | b64decode | trim }}"
+
+# ==========================================
+# 2. Workers
+# ==========================================
+- name:  set up K3s Workers
+  hosts: workers
+  become: yes
+  tasks:
+    - name: Install K3s Agent (Worker) and join the master cluster
+      shell: >
+        curl -sfL https://get.k3s.io | 
+        K3S_URL=https://{{ groups['master'][0] }}:6443 
+        K3S_TOKEN={{ hostvars[groups['master'][0]]['k3s_token'] }} 
+        sh -
+      args:
+        creates: /etc/systemd/system/k3s-agent.service
