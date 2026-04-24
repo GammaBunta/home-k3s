@@ -1,81 +1,55 @@
-PROXMOX_HOST     ?= root@192.168.1.103
-ANSIBLE_DIR      = ansible
-TERRAFORM_DIR    = terraform
-INVENTORY        = $(ANSIBLE_DIR)/inventory.ini
-VAULT_OPTS       = --ask-vault-pass
+# Variables
+TF_DIR = terraform
+ANSIBLE_DIR = ansible
+ANSIBLE_INVENTORY = inventory.ini
+ANSIBLE_PLAYBOOK = site.yml
+# On suppose que tu crées le .vault_pass à la racine, donc Ansible (qui sera dans son dossier) devra remonter d'un cran (../)
+VAULT_PASS_FILE = ../.vault_pass
 
-.PHONY: help all setup-auth setup-template terraform-init terraform-plan terraform-apply terraform-destroy k3s ssl longhorn adguard adguard-ingress portainer hosts ansible-all status clean
+.PHONY: help tf-init tf-plan tf-apply ansible-deploy deploy destroy kubeconfig
 
-# ============================================
-# Help
-# ============================================
-help: ## Show this help
-	@echo ""
-	@echo "Usage: make <target>"
-	@echo ""
-	@echo "Targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
-	@echo ""
+help:
+	@echo "Commandes disponibles :"
+	@echo "  make deploy         - Lance tout : Terraform puis Ansible"
+	@echo "  make tf-apply       - Lance uniquement Terraform (Création VMs)"
+	@echo "  make ansible-deploy - Lance uniquement Ansible (Configuration K3s & Tailscale)"
+	@echo "  make destroy        - /!\\ DETRUIT toute l'infrastructure /!\\"
+	@echo "  make tf-reset       - Supprime l'état local Terraform (sans toucher aux VMs)"
+	@echo "  make kubeconfig     - Récupère le kubeconfig du master pour k9s"
 
-# ============================================
-# Full deploy
-# ============================================
-all: setup-auth setup-template terraform-init terraform-apply ansible-all ## Run everything in order
+# 1. Commandes Terraform (utilisation de -chdir pour pointer vers le dossier terraform)
+tf-init:
+	terraform -chdir=$(TF_DIR) init
 
-# ============================================
-# Proxmox setup (run on remote server)
-# ============================================
-setup-auth: ## Create Proxmox user, role and API token
-	scp setup-auth.sh $(PROXMOX_HOST):~/setup-auth.sh
-	ssh $(PROXMOX_HOST) "bash ~/setup-auth.sh"
+tf-plan: tf-init
+	terraform -chdir=$(TF_DIR) plan
 
-setup-template: ## Create VM template with cloud-init on Proxmox
-	scp setup-template.sh $(PROXMOX_HOST):~/setup-template.sh
-	ssh $(PROXMOX_HOST) "bash ~/setup-template.sh"
+tf-apply: tf-init
+	terraform -chdir=$(TF_DIR) apply -auto-approve
 
-# ============================================
-# Terraform
-# ============================================
-terraform-init: ## Initialize Terraform providers
-	cd $(TERRAFORM_DIR) && terraform init
+# 2. Commandes Ansible (on se place dans le dossier ansible pour qu'il trouve bien les roles et group_vars)
+ansible-deploy:
+	cd $(ANSIBLE_DIR) && ansible-playbook -i $(ANSIBLE_INVENTORY) $(ANSIBLE_PLAYBOOK) --vault-password-file $(VAULT_PASS_FILE)
 
-terraform-plan: ## Preview infrastructure changes
-	cd $(TERRAFORM_DIR) && terraform plan
+# 3. Le combo ultime : Terraform + Ansible
+deploy: tf-apply
+	@echo "Attente de 15 secondes pour le démarrage complet des VMs..."
+	@sleep 15
+	$(MAKE) ansible-deploy
 
-terraform-apply: ## Create VMs on Proxmox
-	cd $(TERRAFORM_DIR) && terraform apply -auto-approve
+# 4. Pour tout casser proprement
+destroy:
+	terraform -chdir=$(TF_DIR) destroy
 
-terraform-destroy: ## Destroy all VMs
-	cd $(TERRAFORM_DIR) && terraform destroy -auto-approve
+# 6. Kubeconfig pour k9s
+kubeconfig:
+	ssh ubuntu@192.168.1.104 "sudo cat /etc/rancher/k3s/k3s.yaml" \
+		| sed 's/127.0.0.1/192.168.1.104/g' \
+		> ~/.kube/config-home-k3s
+	@echo "Kubeconfig prêt : export KUBECONFIG=~/.kube/config-home-k3s"
 
-# ============================================
-# Ansible playbooks (Helm-based)
-# ============================================
-ansible-all: k3s ssl longhorn adguard adguard-ingress portainer ## Run all Ansible playbooks in order
-
-k3s: ## Install K3s on master and workers
-	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini k3s.yml
-
-ssl: ## Deploy Cert-Manager and ClusterIssuer (Helm)
-	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini ssl.yml
-
-longhorn: ## Deploy Longhorn storage + Ingress (Helm)
-	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini longhorn.yml
-
-adguard: ## Deploy AdGuard Home DNS server
-	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini adguard.yml $(VAULT_OPTS)
-
-adguard-ingress: ## Expose AdGuard UI with Ingress + SSL
-	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini adguard-ingress.yml
-
-portainer: ## Deploy Portainer CE + Ingress (Helm)
-	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini portainer.yml
-
-# ============================================
-# Utils
-# ============================================
-status: ## Show cluster status
-	ssh ubuntu@192.168.1.104 "sudo k3s kubectl get nodes -o wide && echo '---' && sudo k3s kubectl get pods -A && echo '---' && sudo k3s kubectl get helmcharts -A"
-
-clean: terraform-destroy ## Destroy everything
-	@echo "Infrastructure destroyed."
+# 5. Reset local Terraform (supprime état + cache, sans toucher aux VMs)
+tf-reset:
+	rm -rf $(TF_DIR)/.terraform $(TF_DIR)/.terraform.lock.hcl
+	rm -f $(TF_DIR)/terraform.tfstate $(TF_DIR)/terraform.tfstate.backup
+	@echo "Reset local Terraform effectué. Lance 'make tf-apply' pour recréer."

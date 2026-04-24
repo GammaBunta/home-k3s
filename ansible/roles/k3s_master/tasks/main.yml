@@ -1,0 +1,20 @@
+---
+- name: Installation du Master
+  shell: curl -sfL https://get.k3s.io | sh -
+  args:
+    creates: /etc/rancher/k3s/k3s.yaml
+
+- name: Attente que le token soit généré
+  wait_for:
+    path: /var/lib/rancher/k3s/server/node-token
+    state: present
+    timeout: 300
+
+- name: Lecture du token
+  slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: node_token_b64
+
+- name: Stockage du token
+  set_fact:
+    k3s_token: "{{ node_token_b64['content'] | b64decode | trim }}"

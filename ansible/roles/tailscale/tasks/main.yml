@@ -1,0 +1,24 @@
+---
+- name: Installation via script officiel
+  shell: curl -fsSL https://tailscale.com/install.sh | sh
+  args:
+    creates: /usr/bin/tailscale
+
+- name: Configuration IP Forwarding (Master)
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+  when: inventory_hostname in groups['master']
+
+- name: Connexion Tailscale (Master - Routeur de sous-réseau)
+  command: >
+    tailscale up --authkey={{ tailscale_auth_key }}
+    --advertise-routes=192.168.1.0/24
+    --ssh
+  when: inventory_hostname in groups['master']
+
+- name: Connexion Tailscale (Workers)
+  command: tailscale up --authkey={{ tailscale_auth_key }} --ssh
+  when: inventory_hostname in groups['workers']

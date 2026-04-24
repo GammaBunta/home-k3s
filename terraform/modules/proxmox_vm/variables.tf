@@ -1,0 +1,9 @@
+variable "name" { type = string }
+variable "vm_id" { type = number }
+variable "node_name" { type = string }
+variable "template_id" { type = number }
+variable "cores" { type = number }
+variable "memory" { type = number }
+variable "ip_address" { type = string }
+variable "gateway" { type = string }
+variable "ssh_key" { type = string }
