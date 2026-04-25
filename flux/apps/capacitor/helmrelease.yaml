@@ -1,17 +1,17 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: weave-gitops
-  namespace: weave-gitops
+  name: capacitor
+  namespace: capacitor
 spec:
   interval: 15m
   chart:
     spec:
-      chart: weave-gitops
-      version: "4.0.36"
+      chart: capacitor
+      version: "0.4.5"
       sourceRef:
         kind: HelmRepository
-        name: weave-gitops
+        name: gimlet
         namespace: flux-system
   install:
     createNamespace: true
@@ -21,21 +21,17 @@ spec:
     remediation:
       retries: 3
   values:
-    adminUser:
-      create: true
-      username: admin
-      passwordHash: "$2a$10$0vF98kvIc731macx1rfEO.Di9KMxlWD9H7G9dMdnDZbThxnrjo7WK"
     ingress:
       enabled: true
       className: traefik
       annotations:
         cert-manager.io/cluster-issuer: selfsigned-issuer
       hosts:
-        - host: gitops.k3s.home
+        - host: capacitor.k3s.home
           paths:
             - path: /
               pathType: Prefix
       tls:
-        - secretName: gitops-k3s-home-tls
+        - secretName: capacitor-k3s-home-tls
           hosts:
-            - gitops.k3s.home
+            - capacitor.k3s.home

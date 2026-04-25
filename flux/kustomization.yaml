@@ -14,5 +14,5 @@ resources:
   - apps/adguard/rewrite-job.yaml
   - apps/portainer/namespace.yaml
   - apps/portainer/helmrelease.yaml
-  - apps/weave-gitops/namespace.yaml
-  - apps/weave-gitops/helmrelease.yaml
+  - apps/capacitor/namespace.yaml
+  - apps/capacitor/helmrelease.yaml
