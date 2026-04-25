@@ -10,7 +10,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  dependsOn:
-    - name: flux-system
+  retryInterval: 2m
   wait: true
   timeout: 5m

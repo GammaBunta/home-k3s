@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - flux-system/gotk-components.yaml
+  - flux-system/gotk-sync.yaml
+  - sources/helmrepositories.yaml
+  - apps/cert-manager/namespace.yaml
+  - apps/cert-manager/helmrelease.yaml
+  - apps/cert-manager/clusterissuer-kustomization.yaml
+  - apps/longhorn/namespace.yaml
+  - apps/longhorn/helmrelease.yaml
+  - apps/adguard/namespace.yaml
+  - apps/adguard/helmrelease.yaml
+  - apps/adguard/rewrite-job.yaml
+  - apps/portainer/namespace.yaml
+  - apps/portainer/helmrelease.yaml

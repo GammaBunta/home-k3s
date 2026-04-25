@@ -38,6 +38,11 @@ spec:
           paths:
             - path: /
               pathType: Prefix
+              backend:
+                service:
+                  name: adguard-home
+                  port:
+                    name: http
       tls:
         - secretName: adguard-k3s-home-tls
           hosts:
