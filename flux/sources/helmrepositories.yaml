@@ -41,4 +41,4 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
-  url: https://gimlet-io.github.io/capacitor/
+  url: https://charts.gimlet.io
