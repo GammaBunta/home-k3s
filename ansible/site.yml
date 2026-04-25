@@ -16,3 +16,9 @@
   become: true
   roles:
     - k3s_workers
+
+- name: Configuration de la VM Agent (CI/CD)
+  hosts: agent
+  become: true
+  roles:
+    - agent

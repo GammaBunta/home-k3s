@@ -1,0 +1,54 @@
+---
+- name: Télécharger l'outil kubectl
+  get_url:
+    url: "https://dl.k8s.io/release/v1.29.2/bin/linux/amd64/kubectl"
+    dest: /usr/local/bin/kubectl
+    mode: '0755'
+
+- name: Installer le CLI Flux CD
+  shell: curl -s https://fluxcd.io/install.sh | bash
+  args:
+    creates: /usr/local/bin/flux
+
+- name: Récupérer le fichier kubeconfig depuis le Master K3s
+  slurp:
+    src: /etc/rancher/k3s/k3s.yaml
+  delegate_to: "{{ groups['master'][0] }}"
+  register: kubeconfig_raw
+
+- name: Créer le dossier caché .kube pour l'utilisateur
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copier le kubeconfig sur l'agent et remplacer l'IP (127.0.0.1 -> IP du Master)
+  copy:
+    content: "{{ kubeconfig_raw['content'] | b64decode | replace('127.0.0.1', groups['master'][0]) }}"
+    dest: /home/ubuntu/.kube/config
+    owner: ubuntu
+    group: ubuntu
+    mode: '0600'
+
+
+- name: Lancement du Bootstrap Flux CD (GitOps)
+  shell: >
+    /usr/local/bin/flux bootstrap github 
+    --owner="{{ github_user }}" 
+    --repository="HOME-K3S" 
+    --branch="main" 
+    --path="./flux" 
+    --personal
+  environment:
+    GITHUB_TOKEN: "{{ github_token }}"
+    KUBECONFIG: "/home/ubuntu/.kube/config" 
+  become: true
+  become_user: ubuntu
+  register: flux_bootstrap_output
+  changed_when: "'all components are healthy' in flux_bootstrap_output.stdout or 'cloned' in flux_bootstrap_output.stdout"
+
+- name: Afficher le résultat du Bootstrap Flux
+  debug:
+    var: flux_bootstrap_output.stdout_lines
