@@ -33,3 +33,12 @@ metadata:
 spec:
   interval: 30m
   url: https://gitlab.trofimoff.net/api/v4/projects/32/packages/helm/stable
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: weave-gitops
+  namespace: flux-system
+spec:
+  interval: 30m
+  url: https://helm.gitops.weave.works

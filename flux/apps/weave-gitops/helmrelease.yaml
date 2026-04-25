@@ -1,0 +1,41 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: weave-gitops
+  namespace: weave-gitops
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: weave-gitops
+      version: "4.0.36"
+      sourceRef:
+        kind: HelmRepository
+        name: weave-gitops
+        namespace: flux-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    adminUser:
+      create: true
+      username: admin
+      passwordHash: "$2a$10$0vF98kvIc731macx1rfEO.Di9KMxlWD9H7G9dMdnDZbThxnrjo7WK"
+    ingress:
+      enabled: true
+      className: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: selfsigned-issuer
+      hosts:
+        - host: gitops.k3s.home
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: gitops-k3s-home-tls
+          hosts:
+            - gitops.k3s.home

@@ -43,9 +43,7 @@ spec:
 
               sleep 5
 
-              for domain in adguard.k3s.home longhorn.k3s.home portainer.k3s.home; do
-                curl -sf -u "${ADGUARD_USER}:${ADGUARD_PASS}" \
-                  -X POST "http://adguard-home:3080/control/rewrite/add" \
-                  -H "Content-Type: application/json" \
-                  -d "{\"domain\":\"${domain}\",\"answer\":\"${MASTER_IP}\"}" || true
-              done
+              curl -sf -u "${ADGUARD_USER}:${ADGUARD_PASS}" \
+                -X POST "http://adguard-home:3080/control/rewrite/add" \
+                -H "Content-Type: application/json" \
+                -d "{\"domain\":\"*.k3s.home\",\"answer\":\"${MASTER_IP}\"}" || true
