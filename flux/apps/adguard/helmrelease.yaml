@@ -7,11 +7,11 @@ spec:
   interval: 15m
   chart:
     spec:
-      chart: adguardhome
-      version: "0.1.13"
+      chart: adguard-home
+      version: "0.3.25"
       sourceRef:
         kind: HelmRepository
-        name: adguardhome
+        name: gabe565
         namespace: flux-system
   install:
     createNamespace: true
@@ -22,29 +22,166 @@ spec:
     remediation:
       retries: 3
   values:
-    fullnameOverride: adguard-home
-    persistence:
-      enabled: true
-      storageClass: longhorn
-      size: 8Gi
+    env:
+      TZ: Europe/Paris
+
     service:
-      type: LoadBalancer
+      main:
+        ports:
+          http:
+            port: 80
+      dns-tcp:
+        enabled: true
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        annotations: {}
+        ports:
+          dns-tcp:
+            enabled: true
+            port: 53
+          dns-over-tls:
+            enabled: false
+      dns-udp:
+        enabled: true
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        annotations: {}
+        ports:
+          dns-udp:
+            enabled: true
+            protocol: UDP
+            port: 53
+          dns-over-quic:
+            enabled: false
+
     ingress:
-      enabled: true
-      className: traefik
-      annotations:
-        cert-manager.io/cluster-issuer: selfsigned-issuer
-      hosts:
-        - host: adguard.k3s.home
-          paths:
-            - path: /
-              pathType: Prefix
-              backend:
-                service:
-                  name: adguard-home
-                  port:
-                    name: http
+      main:
+        enabled: true
+        ingressClassName: traefik
+        annotations:
+          cert-manager.io/cluster-issuer: selfsigned-issuer
+        hosts:
+          - host: adguard.k3s.home
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - secretName: adguard-k3s-home-tls
+            hosts:
+              - adguard.k3s.home
+
+    persistence:
+      config:
+        enabled: true
+        storageClass: longhorn
+        accessMode: ReadWriteOnce
+        size: 1Gi
+      data:
+        enabled: true
+        storageClass: longhorn
+        accessMode: ReadWriteOnce
+        size: 8Gi
+
+    config: |
+      bind_host: 0.0.0.0
+      bind_port: 80
+      users:
+        - name: samuel
+          password: "$2y$10$iJDlt/0MggfEE.4qigtxxOwFU.XVAJGm7JgavqcLLHc/URdZ3JR3m"
+      auth_attempts: 5
+      block_auth_min: 15
+      http_proxy: ""
+      language: ""
+      theme: auto
+      debug_pprof: false
+      web_session_ttl: 720
+      dns:
+        bind_hosts:
+          - 0.0.0.0
+        port: 53
+        anonymize_client_ip: false
+        protection_enabled: true
+        blocking_mode: default
+        blocking_ipv4: ""
+        blocking_ipv6: ""
+        blocked_response_ttl: 10
+        ratelimit: 20
+        ratelimit_whitelist: []
+        refuse_any: true
+        upstream_dns:
+          - https://dns10.quad9.net/dns-query
+          - https://dns.cloudflare.com/dns-query
+        upstream_dns_file: ""
+        bootstrap_dns:
+          - 9.9.9.10
+          - 149.112.112.10
+        all_servers: false
+        fastest_addr: false
+        allowed_clients: []
+        disallowed_clients: []
+        blocked_hosts:
+          - version.bind
+          - id.server
+          - hostname.bind
+        trusted_proxies:
+          - 127.0.0.0/8
+          - ::1/128
+        cache_size: 4194304
+        cache_ttl_min: 0
+        cache_ttl_max: 0
+        cache_optimistic: false
+        bogus_nxdomain: []
+        aaaa_disabled: false
+        enable_dnssec: false
+        filtering_enabled: true
+        filters_update_interval: 24
+        parental_enabled: false
+        safesearch_enabled: false
+        safebrowsing_enabled: false
+        rewrites:
+          - domain: "*.k3s.home"
+            answer: "192.168.1.104"
+        blocked_services: []
+        upstream_timeout: 10s
+        private_networks: []
+        use_private_ptr_resolvers: true
+        local_ptr_upstreams: []
       tls:
-        - secretName: adguard-k3s-home-tls
-          hosts:
-            - adguard.k3s.home
+        enabled: false
+      querylog:
+        enabled: true
+        file_enabled: true
+        interval: 2160h
+        size_memory: 1000
+        ignored: []
+      statistics:
+        enabled: true
+        interval: 1
+        ignored: []
+      filters:
+        - enabled: true
+          url: https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt
+          name: AdGuard DNS filter
+          id: 1
+      whitelist_filters: []
+      user_rules: []
+      dhcp:
+        enabled: false
+        interface_name: ""
+        local_domain_name: lan
+      clients:
+        runtime_sources:
+          whois: true
+          arp: true
+          rdns: true
+          dhcp: true
+          hosts: true
+        persistent: []
+      log_file: ""
+      log_max_backups: 0
+      log_max_size: 100
+      log_max_age: 3
+      log_compress: false
+      log_localtime: false
+      verbose: false
+      schema_version: 17

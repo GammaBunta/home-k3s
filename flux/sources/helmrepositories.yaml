@@ -25,21 +25,12 @@ spec:
   interval: 30m
   url: https://portainer.github.io/k8s/
 ---
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: adguardhome
-  namespace: flux-system
-spec:
-  interval: 30m
-  url: https://gitlab.trofimoff.net/api/v4/projects/32/packages/helm/stable
----
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: gimlet
+  name: gabe565
   namespace: flux-system
 spec:
   interval: 30m
   type: oci
-  url: oci://ghcr.io/gimlet-io/charts
+  url: oci://ghcr.io/gabe565/charts
