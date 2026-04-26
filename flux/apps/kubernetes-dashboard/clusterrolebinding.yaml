@@ -8,5 +8,5 @@ roleRef:
   name: cluster-admin
 subjects:
   - kind: ServiceAccount
-    name: headlamp
-    namespace: kubernetes-dashboard
+    name: headlamp-admin
+    namespace: kube-system
