@@ -1,17 +1,17 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: flux-operator
+  name: weave-gitops
   namespace: flux-operator
 spec:
   interval: 15m
   chart:
     spec:
-      chart: flux-operator
-      version: "0.*"
+      chart: weave-gitops
+      version: "4.*"
       sourceRef:
         kind: HelmRepository
-        name: controlplaneio
+        name: weave-gitops
         namespace: flux-system
   install:
     createNamespace: true
@@ -22,6 +22,11 @@ spec:
     remediation:
       retries: 3
   values:
+    adminUser:
+      create: true
+      username: admin
+      # bcrypt hash de "admin" - à changer après premier accès
+      passwordHash: "$2a$10$P.ZWuHQFEv3kBNXHYfU0NeL.kVe0BaZPirWZWjW/xjz5qlJ.H19Zy"
     ingress:
       enabled: true
       className: traefik
