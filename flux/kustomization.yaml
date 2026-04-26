@@ -15,3 +15,5 @@ resources:
   - apps/portainer/helmrelease.yaml
   - apps/weave-gitops/namespace.yaml
   - apps/weave-gitops/helmrelease.yaml
+  - apps/kubernetes-dashboard/namespace.yaml
+  - apps/kubernetes-dashboard/helmrelease.yaml
