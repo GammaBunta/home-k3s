@@ -13,3 +13,5 @@ resources:
   - apps/adguard/helmrelease.yaml
   - apps/portainer/namespace.yaml
   - apps/portainer/helmrelease.yaml
+  - apps/flux-operator/namespace.yaml
+  - apps/flux-operator/helmrelease.yaml
