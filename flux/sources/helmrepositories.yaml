@@ -62,13 +62,3 @@ metadata:
 spec:
   interval: 30m
   url: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: bitnami
-  namespace: flux-system
-spec:
-  interval: 30m
-  type: oci
-  url: oci://registry-1.docker.io/bitnamicharts

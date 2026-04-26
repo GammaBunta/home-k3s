@@ -4,6 +4,7 @@ resources:
   - flux-system/gotk-components.yaml
   - flux-system/gotk-sync.yaml
   - sources/helmrepositories.yaml
+  - sources/ocirepositories.yaml
   - apps/nfs-provisioner/namespace.yaml
   - apps/nfs-provisioner/helmrelease.yaml
   - apps/cert-manager/namespace.yaml
