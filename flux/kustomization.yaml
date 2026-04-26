@@ -11,6 +11,5 @@ resources:
   - apps/longhorn/helmrelease.yaml
   - apps/adguard/namespace.yaml
   - apps/adguard/helmrelease.yaml
-  - apps/adguard/rewrite-job.yaml
   - apps/portainer/namespace.yaml
   - apps/portainer/helmrelease.yaml
