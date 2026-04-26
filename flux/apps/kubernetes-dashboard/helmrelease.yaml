@@ -43,8 +43,8 @@ spec:
           name: headlamp-metrics
         subjects:
           - kind: ServiceAccount
-            name: headlamp
-            namespace: kubernetes-dashboard
+            name: headlamp-admin
+            namespace: kube-system
     ingress:
       enabled: true
       ingressClassName: traefik
