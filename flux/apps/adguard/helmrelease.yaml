@@ -33,6 +33,7 @@ spec:
       dns-tcp:
         enabled: true
         type: LoadBalancer
+        loadBalancerIP: 192.168.1.104
         externalTrafficPolicy: Local
         annotations: {}
         ports:
@@ -44,6 +45,7 @@ spec:
       dns-udp:
         enabled: true
         type: LoadBalancer
+        loadBalancerIP: 192.168.1.104
         externalTrafficPolicy: Local
         annotations: {}
         ports:
@@ -61,14 +63,14 @@ spec:
         annotations:
           cert-manager.io/cluster-issuer: selfsigned-issuer
         hosts:
-          - host: adguard.k3s.lan
+          - host: adguard.k3s.home
             paths:
               - path: /
                 pathType: Prefix
         tls:
-          - secretName: adguard-k3s-lan-tls
+          - secretName: adguard-k3s-home-tls
             hosts:
-              - adguard.k3s.lan
+              - adguard.k3s.home
 
     persistence:
       config:
@@ -139,7 +141,7 @@ spec:
         safesearch_enabled: false
         safebrowsing_enabled: false
         rewrites:
-          - domain: "*.k3s.lan"
+          - domain: "*.k3s.home"
             answer: "192.168.1.104"
         blocked_services: []
         upstream_timeout: 10s
