@@ -61,14 +61,14 @@ spec:
         annotations:
           cert-manager.io/cluster-issuer: selfsigned-issuer
         hosts:
-          - host: adguard.k3s.home
+          - host: adguard.k3s.lan
             paths:
               - path: /
                 pathType: Prefix
         tls:
-          - secretName: adguard-k3s-home-tls
+          - secretName: adguard-k3s-lan-tls
             hosts:
-              - adguard.k3s.home
+              - adguard.k3s.lan
 
     persistence:
       config:
@@ -139,7 +139,7 @@ spec:
         safesearch_enabled: false
         safebrowsing_enabled: false
         rewrites:
-          - domain: "*.k3s.home"
+          - domain: "*.k3s.lan"
             answer: "192.168.1.104"
         blocked_services: []
         upstream_timeout: 10s
