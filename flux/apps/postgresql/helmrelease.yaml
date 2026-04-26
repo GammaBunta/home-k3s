@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: postgresql
+  namespace: postgresql
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: postgresql
+      version: "16.*"
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    auth:
+      existingSecret: postgresql-secret
+      secretKeys:
+        adminPasswordKey: postgres-password
+
+    primary:
+      persistence:
+        enabled: true
+        storageClass: nfs-nas
+        size: 10Gi
+
+      nodeSelector:
+        kubernetes.io/hostname: k3s-master

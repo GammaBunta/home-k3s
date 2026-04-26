@@ -1,0 +1,15 @@
+---
+- name: Création du namespace postgresql
+  shell: kubectl create namespace postgresql --dry-run=client -o yaml | kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Création du secret PostgreSQL
+  shell: |
+    kubectl create secret generic postgresql-secret \
+      -n postgresql \
+      --from-literal=postgres-password='{{ vault_postgresql_password }}' \
+      --dry-run=client -o yaml | kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  no_log: true

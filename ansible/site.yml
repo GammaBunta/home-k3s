@@ -11,6 +11,12 @@
   roles:
     - k3s_master
 
+- name: Injection des secrets Kubernetes
+  hosts: master
+  become: true
+  roles:
+    - k3s_secrets
+
 - name: Configuration des Workers K3s
   hosts: workers
   become: true
