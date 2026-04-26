@@ -19,7 +19,5 @@ resources:
   - apps/weave-gitops/helmrelease.yaml
   - apps/kubernetes-dashboard/namespace.yaml
   - apps/kubernetes-dashboard/helmrelease.yaml
-  - apps/cnpg/namespace.yaml
-  - apps/cnpg/helmrelease.yaml
-  - apps/postgresql/namespace.yaml
-  - apps/postgresql/cluster.yaml
+  - apps/cnpg-ks.yaml
+  - apps/postgresql-ks.yaml
