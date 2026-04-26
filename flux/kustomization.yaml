@@ -17,4 +17,3 @@ resources:
   - apps/weave-gitops/helmrelease.yaml
   - apps/kubernetes-dashboard/namespace.yaml
   - apps/kubernetes-dashboard/helmrelease.yaml
-  - apps/kubernetes-dashboard/clusterrolebinding.yaml
