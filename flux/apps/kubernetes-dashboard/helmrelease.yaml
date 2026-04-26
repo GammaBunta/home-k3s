@@ -31,7 +31,7 @@ spec:
         - host: dashboard.k3s.home
           paths:
             - path: /
-              pathType: Prefix
+              type: Prefix
       tls:
         - secretName: dashboard-k3s-home-tls
           hosts:
