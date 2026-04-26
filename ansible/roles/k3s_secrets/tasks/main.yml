@@ -4,11 +4,12 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Création du secret PostgreSQL
+- name: Création du secret superuser CloudNativePG
   shell: |
-    kubectl create secret generic postgresql-secret \
+    kubectl create secret generic postgresql-superuser \
       -n postgresql \
-      --from-literal=postgres-password='{{ vault_postgresql_password }}' \
+      --from-literal=username=postgres \
+      --from-literal=password='{{ vault_postgresql_password }}' \
       --dry-run=client -o yaml | kubectl apply -f -
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml

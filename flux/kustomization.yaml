@@ -4,7 +4,6 @@ resources:
   - flux-system/gotk-components.yaml
   - flux-system/gotk-sync.yaml
   - sources/helmrepositories.yaml
-  - sources/ocirepositories.yaml
   - apps/nfs-provisioner/namespace.yaml
   - apps/nfs-provisioner/helmrelease.yaml
   - apps/cert-manager/namespace.yaml
@@ -20,5 +19,7 @@ resources:
   - apps/weave-gitops/helmrelease.yaml
   - apps/kubernetes-dashboard/namespace.yaml
   - apps/kubernetes-dashboard/helmrelease.yaml
+  - apps/cnpg/namespace.yaml
+  - apps/cnpg/helmrelease.yaml
   - apps/postgresql/namespace.yaml
-  - apps/postgresql/helmrelease.yaml
+  - apps/postgresql/cluster.yaml
