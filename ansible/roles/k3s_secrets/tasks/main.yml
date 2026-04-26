@@ -1,16 +1,12 @@
 ---
 - name: Création du namespace postgresql
-  shell: kubectl create namespace postgresql --dry-run=client -o yaml | kubectl apply -f -
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  shell: KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl create namespace postgresql --dry-run=client -o yaml | KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f -
 
 - name: Création du secret superuser CloudNativePG
   shell: |
-    kubectl create secret generic postgresql-superuser \
+    KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl create secret generic postgresql-superuser \
       -n postgresql \
       --from-literal=username=postgres \
       --from-literal=password='{{ vault_postgresql_password }}' \
-      --dry-run=client -o yaml | kubectl apply -f -
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      --dry-run=client -o yaml | KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f -
   no_log: true
