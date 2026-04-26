@@ -25,6 +25,9 @@ spec:
     env:
       TZ: Europe/Paris
 
+    nodeSelector:
+      kubernetes.io/hostname: k3s-master
+
     service:
       main:
         ports:
