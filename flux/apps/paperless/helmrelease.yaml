@@ -1,0 +1,90 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: paperless-ngx
+  namespace: paperless
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: paperless-ngx
+      version: "0.24.1"
+      sourceRef:
+        kind: HelmRepository
+        name: gabe565
+        namespace: flux-system
+  values:
+    env:
+      TZ: Europe/Paris
+      PAPERLESS_DBENGINE: postgresql
+      PAPERLESS_DBHOST: postgresql-rw.postgresql.svc.cluster.local
+      PAPERLESS_DBPORT: "5432"
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBSSLMODE: disable
+      PAPERLESS_DBPASS:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-secrets
+            key: db-password
+      PAPERLESS_SECRET_KEY:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-secrets
+            key: secret-key
+
+    persistence:
+      data:
+        enabled: true
+        retain: true
+        mountPath: /usr/src/paperless/data
+        storageClass: nfs-nas
+        accessMode: ReadWriteOnce
+        size: 5Gi
+      media:
+        enabled: true
+        retain: true
+        mountPath: /usr/src/paperless/media
+        storageClass: nfs-nas
+        accessMode: ReadWriteOnce
+        size: 20Gi
+      export:
+        enabled: true
+        retain: true
+        mountPath: /usr/src/paperless/export
+        storageClass: nfs-nas
+        accessMode: ReadWriteOnce
+        size: 2Gi
+      consume:
+        enabled: true
+        retain: true
+        mountPath: /usr/src/paperless/consume
+        storageClass: nfs-nas
+        accessMode: ReadWriteOnce
+        size: 2Gi
+
+    postgresql:
+      enabled: false
+
+    mariadb:
+      enabled: false
+
+    redis:
+      enabled: true
+      auth:
+        enabled: true
+      master:
+        persistence:
+          enabled: true
+          storageClass: nfs-nas
+          size: 1Gi
+      replica:
+        replicaCount: 0
+
+    ingress:
+      main:
+        enabled: true
+        hosts:
+          - host: paperless.k3s.lan
+            paths:
+              - path: /

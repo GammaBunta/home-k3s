@@ -10,3 +10,36 @@
       --from-literal=password='{{ vault_postgresql_password }}' \
       --dry-run=client -o yaml | KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f -
   no_log: true
+
+- name: Création du namespace paperless
+  shell: KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl create namespace paperless --dry-run=client -o yaml | KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f -
+
+- name: Création du user paperless dans PostgreSQL
+  shell: |
+    EXISTS=$(KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl exec -n postgresql postgresql-1 -- \
+      psql -U postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='paperless'")
+    if [ "$EXISTS" != "1" ]; then
+      KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl exec -n postgresql postgresql-1 -- \
+        psql -U postgres -c "CREATE USER paperless WITH LOGIN"
+    fi
+    KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl exec -n postgresql postgresql-1 -- \
+      psql -U postgres -c "ALTER USER paperless WITH PASSWORD '{{ vault_paperless_db_password }}'"
+  no_log: true
+
+- name: Création de la base de données paperless
+  shell: |
+    EXISTS=$(KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl exec -n postgresql postgresql-1 -- \
+      psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='paperless'")
+    if [ "$EXISTS" != "1" ]; then
+      KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl exec -n postgresql postgresql-1 -- \
+        psql -U postgres -c "CREATE DATABASE paperless OWNER paperless"
+    fi
+
+- name: Création du secret paperless-secrets
+  shell: |
+    KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl create secret generic paperless-secrets \
+      -n paperless \
+      --from-literal=db-password='{{ vault_paperless_db_password }}' \
+      --from-literal=secret-key='{{ vault_paperless_secret_key }}' \
+      --dry-run=client -o yaml | KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl apply -f -
+  no_log: true

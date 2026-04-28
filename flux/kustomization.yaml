@@ -21,3 +21,4 @@ resources:
   - apps/kubernetes-dashboard/helmrelease.yaml
   - apps/cnpg-ks.yaml
   - apps/postgresql-ks.yaml
+  - apps/paperless-ks.yaml
