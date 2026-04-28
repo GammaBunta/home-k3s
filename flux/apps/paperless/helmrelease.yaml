@@ -14,13 +14,9 @@ spec:
         name: gabe565
         namespace: flux-system
   values:
-    global:
-      imageRegistry: ghcr.io
-      security:
-        allowInsecureImages: true
-
     env:
       TZ: Europe/Paris
+      PAPERLESS_REDIS: "redis://paperless-redis:6379"
       PAPERLESS_DBENGINE: postgresql
       PAPERLESS_DBHOST: postgresql-rw.postgresql.svc.cluster.local
       PAPERLESS_DBPORT: "5432"
@@ -75,16 +71,7 @@ spec:
       enabled: false
 
     redis:
-      enabled: true
-      auth:
-        enabled: false
-      master:
-        persistence:
-          enabled: true
-          storageClass: nfs-nas
-          size: 1Gi
-      replica:
-        replicaCount: 0
+      enabled: false
 
     ingress:
       main:
